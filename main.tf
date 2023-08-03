@@ -4,8 +4,8 @@ data "http" "openid-configuration" {
   url = "${var.url}/.well-known/openid-configuration"
 }
 
-data "tls_certificate" "jwks" {
-  url = jsondecode(data.http.openid-configuration.response_body).jwks_uri
+data "tls_certificate" "this" {
+  url = "https://oidc.eks.us-east-1.amazonaws.com/id/2D36A2FEA9E563F1F19D18D8BA168986"
 }
 
 resource "aws_iam_openid_connect_provider" "this" {
@@ -13,10 +13,7 @@ resource "aws_iam_openid_connect_provider" "this" {
 
   client_id_list = var.client_id_list
 
-  thumbprint_list = [
-  # This should give us the certificate of the top intermediate CA in the certificate authority chain
-    for cert in data.tls_certificate.jwks.certificates : cert.sha1_fingerprint if cert.is_ca
-  ]
+  thumbprint_list = data.tls_certificate.this.certificates[*].sha1_fingerprint
 
   tags = var.tags
 }
