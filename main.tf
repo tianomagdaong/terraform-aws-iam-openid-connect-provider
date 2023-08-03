@@ -15,10 +15,7 @@ resource "aws_iam_openid_connect_provider" "this" {
 
   thumbprint_list = [
   # This should give us the certificate of the top intermediate CA in the certificate authority chain
-    find(
-      data.tls_certificate.jwks.certificates,
-      (cert) => cert.is_ca
-    ).sha1_fingerprint,
+    for cert in data.tls_certificate.jwks.certificates : cert.sha1_fingerprint if cert.is_ca
   ]
 
   tags = var.tags
